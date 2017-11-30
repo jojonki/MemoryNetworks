@@ -5,7 +5,7 @@ from utils import load_data, to_var, vectorize
 from memnn import MemNN
 
 
-train_data, test_data, vocab = load_data('./data/tasks_1-20_v1-2/en', 0, 2)
+train_data, test_data, vocab = load_data('./data/tasks_1-20_v1-2/en', 0, 1)
 data = train_data + test_data
 print('sample', train_data[0])
 w2i = dict((w, i) for i, w in enumerate(vocab, 1))
@@ -48,7 +48,7 @@ def train(model, data, test_data, optimizer, loss_fn, batch_size=64, n_epoch=100
         print('Acc: {:.2f}% - '.format(correct/count*100), correct, '/', count)
 
 embd_size = 100
-model = MemNN(vocab_size, embd_size, vocab_size)
+model = MemNN(vocab_size, embd_size, vocab_size, story_len)
 if torch.cuda.is_available():
     model.cuda()
 optimizer = torch.optim.Adam(model.parameters())

@@ -5,6 +5,9 @@ import re
 from functools import reduce
 from itertools import chain
 
+import torch
+from torch.autograd import Variable
+
 
 def load_data(data_dir, joint_training, task_number):
     if (joint_training == 0):
@@ -108,3 +111,39 @@ def tokenize(sent):
     ['Bob', 'dropped', 'the', 'apple', '.', 'Where', 'is', 'the', 'apple', '?']
     '''
     return [x.strip() for x in re.split('(\W+)?', sent) if x.strip()]
+
+
+def word_to_index(sent, w2i):
+    vec = []
+    for w in sent:
+        if w in w2i:
+            vec.append(w2i[w])
+        else:
+            vec.append(w2i['<UNK>'])
+    return vec
+
+
+def vectorize(data, w2i, story_len, s_sent_len, q_sent_len):
+    ret_data = []
+    for d in data:
+        tmp_story = d[0]
+        story = []
+        for s in tmp_story:
+            sent = word_to_index(s, w2i)
+            sent += [0] * (s_sent_len - len(sent))
+            story.append(sent)
+        while len(story) < story_len:
+            story.append([0] * s_sent_len)
+
+        q = word_to_index(d[1], w2i)
+        pad_q = q_sent_len - len(q)
+        q += [0] * pad_q
+        a = word_to_index(d[2], w2i)
+        ret_data.append((story, q, a))
+    return ret_data
+
+
+def to_var(x):
+    if torch.cuda.is_available():
+        x = x.cuda()
+    return Variable(x)
