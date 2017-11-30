@@ -93,7 +93,7 @@ def parse_stories(lines, only_supporting=False):
                 # Provide all the substories
                 substory = [x for x in story if x]
 
-            data.append((substory, q, a))
+            data.append((substory[::-1], q, a)) # reverse story
             story.append('')
         else:  # regular sentence
             # remove periods
