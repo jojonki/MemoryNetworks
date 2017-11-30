@@ -1,15 +1,15 @@
 import random
 import torch
 import torch.nn as nn
-from tqdm import tqdm
 from utils import load_data, to_var, vectorize
 from memnn import MemNN
 
 
 def test(model, data, batch_size):
+    model.eval()
     correct = 0
     count = 0
-    for i in tqdm(range(0, len(data)-batch_size, batch_size)):
+    for i in range(0, len(data)-batch_size, batch_size):
         batch_data = data[i:i+batch_size]
         story = [d[0] for d in batch_data]
         q = [d[1] for d in batch_data]
@@ -21,8 +21,6 @@ def test(model, data, batch_size):
         pred_idx = pred.max(1)[1]
         correct += torch.sum(pred_idx == a).data[0]
         count += batch_size
-
-        # loss = loss_fn(pred, a)
     print('Test Acc: {:.2f}% - '.format(correct/count*100), correct, '/', count)
 
 
@@ -33,8 +31,9 @@ def adjust_lr(optimizer, epoch):
             print('Learning rate is set to', pg['lr'])
 
 
-def train(model, data, test_data, optimizer, loss_fn, batch_size=32, n_epoch=100):
+def train(model, data, test_data, optimizer, loss_fn, batch_size=64, n_epoch=100):
     for epoch in range(n_epoch):
+        model.train()
         # print('epoch', epoch)
         correct = 0
         count = 0
@@ -70,14 +69,15 @@ def train(model, data, test_data, optimizer, loss_fn, batch_size=32, n_epoch=100
         # adjust_lr(optimizer, epoch)
 
 
-embd_size = 25
+embd_size = 64
 UNK = '<UNK>'
 lr = 0.01
 
+
 def run():
     for i in range(20):
-        print('Task', i+1)
-        train_data, test_data, vocab = load_data('./data/tasks_1-20_v1-2/en-10k', 0, i+1)
+        print('-*_*_*_*_*_*_*_*_ Task', i+1)
+        train_data, test_data, vocab = load_data('./data/tasks_1-20_v1-2/en', 0, i+1)
         data = train_data + test_data
         print('sample', train_data[0])
 
@@ -99,7 +99,8 @@ def run():
         if torch.cuda.is_available():
             model.cuda()
         # optimizer = torch.optim.SGD(model.parameters(), lr=lr)
-        optimizer = torch.optim.RMSprop(model.parameters(), lr=lr)
+        optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
         loss_fn = nn.NLLLoss()
         vec_train = vectorize(train_data, w2i, story_len, s_sent_len, q_sent_len)
         vec_test = vectorize(test_data, w2i, story_len, s_sent_len, q_sent_len)
