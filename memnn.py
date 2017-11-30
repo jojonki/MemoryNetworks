@@ -9,7 +9,7 @@ class MemNN(nn.Module):
         self.hops = hops
         self.embd_size = embd_size
 
-        init_rng = 0.01
+        init_rng = 0.1
         self.A = nn.ModuleList([nn.Embedding(vocab_size, embd_size) for _ in range(hops+1)])
         for i in range(len(self.A)):
             self.A[i].weight = nn.Parameter(torch.randn(vocab_size, embd_size).normal_(-init_rng, init_rng))
