@@ -46,6 +46,6 @@ class MemNN(nn.Module):
             o = c * p # use m as c, (bs, story_len, embd_size)
             o = torch.sum(o, 1) # (bs, embd_size)
             u = o + u # (bs, embd_size)
-        W = torch.t(self.A[len(self.A)-2].weight) # (embd_size, vocab_size)
+        W = torch.t(self.A[-1].weight) # (embd_size, vocab_size)
         out = torch.bmm(u.unsqueeze(1), W.unsqueeze(0).repeat(bs, 1, 1)).squeeze() # (bs, ans_size)
         return F.log_softmax(out)
