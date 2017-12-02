@@ -61,7 +61,7 @@ def train(model, data, test_data, optimizer, loss_fn, batch_size=64, n_epoch=100
             # for p in model.parameters():
             #     torch.nn.utils.clip_grad_norm(p, 40.0)
 
-        if epoch % 10 == 0:
+        if epoch % 20 == 0:
             print('=======Epoch {}======='.format(epoch))
             print('Training Acc: {:.2f}% - '.format(correct/count*100), correct, '/', count)
             test(model, test_data, batch_size)
