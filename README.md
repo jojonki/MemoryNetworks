@@ -15,30 +15,30 @@
 
 For test results of 1k set.
 
-- Task 1: 100.00%
-- Task 2: 27.62%
-- Task 3: 20.67%
-- Task 4: 63.00%
-- Task 5: 81.35%
-- Task 6: 93.04%
-- Task 7: 82.16%
-- Task 8: 87.00%
-- Task 9: 61.79%
-- Task 10: 60.28%
-- Task 11: 87.60%
-- Task 12: 99.90%
-- Task 13: 21.75%
-- Task 14: 84.72%
-- Task 15: 40.22%
-- Task 16: 43.75%
-- Task 17: 50.10%
-- Task 18: 56.35%
-- Task 19: 9.07%
-- Task 20: 100.0%
+- Task 1: 99.80%
+- Task 2: 16.94%
+- Task 3: 19.25%
+- Task 4: 67.14%
+- Task 5: 81.96%
+- Task 6: 47.08%
+- Task 7: 22.18%
+- Task 8: 86.19%
+- Task 9: 59.48%
+- Task 10: 43.55%
+- Task 11: 84.27%
+- Task 12: 16.53%
+- Task 13: 93.65%
+- Task 14: 78.84%
+- Task 15: 80.65%
+- Task 16: 42.74%
+- Task 17: 50.50%
+- Task 18: 50.81%
+- Task 19: 7.96%
+- Task 20: 99.90%
 
 
 ## TODO
-- [ ] joing training
+- [ ] joint training
 - [ ] correct optimizer and learning rate
 - [ ] set maximum story size
 - [ ] compare results with FAIR team (the performance of some tasks is very low)
