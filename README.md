@@ -13,7 +13,7 @@
 
 ## Results
 
-For test results of 1k set.
+For test results of 1k set. The performance is not good so far :(
 
 - Task 1: 99.80%
 - Task 2: 16.94%
@@ -39,6 +39,6 @@ For test results of 1k set.
 
 ## TODO
 - [ ] joint training
-- [ ] correct optimizer and learning rate
 - [ ] set maximum story size
 - [ ] compare results with FAIR team (the performance of some tasks is very low)
+- [ ] correct optimizer and learning rate
