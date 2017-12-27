@@ -13,31 +13,33 @@
 
 ## Results
 
-For test results of 1k set. The performance is not good so far :(
+Some tasks' performance is not good compared to original results :(
 
-- Task 1: 99.80%
-- Task 2: 16.94%
-- Task 3: 19.25%
-- Task 4: 67.14%
-- Task 5: 81.96%
-- Task 6: 47.08%
-- Task 7: 22.18%
-- Task 8: 86.19%
-- Task 9: 59.48%
-- Task 10: 43.55%
-- Task 11: 84.27%
-- Task 12: 16.53%
-- Task 13: 93.65%
-- Task 14: 78.84%
-- Task 15: 80.65%
-- Task 16: 42.74%
-- Task 17: 50.50%
-- Task 18: 50.81%
-- Task 19: 7.96%
-- Task 20: 99.90%
+- Task 1: 99.29%
+- Task 2: 29.74%
+- Task 3: 19.46%
+- Task 4: 72.08%
+- Task 5: 81.05%
+- Task 6: 85.69%
+- Task 7: 74.29%
+- Task 8: 87.20%
+- Task 9: 74.70%
+- Task 10: 62.50%
+- Task 11: 72.38%
+- Task 12: 15.52%
+- Task 13: 90.83%
+- Task 14: 29.54%   ????
+- Task 15: 99.70%
+- Task 16: 47.58%
+- Task 17: 47.58%
+- Task 18: 51.92%
+- Task 19: 11.39%
+- Task 20: 93.55%
 
 
 ## TODO
+- [ ] Random noise (RN)
+- [ ] Linear start (RN)
 - [ ] joint training
 - [ ] set maximum story size
 - [ ] compare results with FAIR team (the performance of some tasks is very low)
