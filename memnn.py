@@ -1,13 +1,15 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from utils import to_var
 
 
 class MemNN(nn.Module):
-    def __init__(self, vocab_size, embd_size, ans_size, story_len, hops=3, dropout=0.0):
+    def __init__(self, vocab_size, embd_size, ans_size, story_len, hops=3, dropout=0.0, pe=False):
         super(MemNN, self).__init__()
         self.hops = hops
         self.embd_size = embd_size
+        self.position_encoding = pe
 
         init_rng = 0.1
         self.dropout = nn.Dropout(p=dropout)
@@ -37,7 +39,16 @@ class MemNN(nn.Module):
         for k in range(self.hops):
             m = self.dropout(self.A[k](x)) # (bs*story_len, s_sent_len, embd_size)
             m = m.view(bs, story_len, s_sent_len, -1) # (bs, story_len, s_sent_len, embd_size)
-            m = torch.sum(m, 2) # (bs, story_len, embd_size)
+            if self.position_encoding:
+                tmp_m = to_var(torch.zeros(1, story_len, self.embd_size))
+                for n in range(bs):
+                    for story in range(story_len):
+                        for j in range(s_sent_len):
+                            l_kj = (1 - j / story_len) - (k + 1 / self.embd_size) * (1 - 2 * j / story_len) # k starts 0
+                            tmp_m[n][story] += l_kj * m[n][story][j]
+                m = tmp_m
+            else:
+                m = torch.sum(m, 2) # (bs, story_len, embd_size)
             m += self.TA.repeat(bs, 1, self.embd_size)
 
             c = self.dropout(self.A[k+1](x)) # (bs*story_len, s_sent_len, embd_size)
@@ -54,4 +65,4 @@ class MemNN(nn.Module):
 
         W = torch.t(self.A[-1].weight) # (embd_size, vocab_size)
         out = torch.bmm(u.unsqueeze(1), W.unsqueeze(0).repeat(bs, 1, 1)).squeeze() # (bs, ans_size)
-        return F.log_softmax(out)
+        return F.log_softmax(out, -1)
