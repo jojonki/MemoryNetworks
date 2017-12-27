@@ -134,6 +134,7 @@ def vectorize(data, w2i, story_len, s_sent_len, q_sent_len):
             story.append(sent)
         while len(story) < story_len:
             story.append([0] * s_sent_len)
+        story = story[::-1][:story_len][::-1] # use recent episodes
 
         q = word_to_index(d[1], w2i)
         pad_q = q_sent_len - len(q)

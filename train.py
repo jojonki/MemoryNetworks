@@ -69,9 +69,9 @@ def train(model, data, test_data, optimizer, loss_fn, batch_size=64, n_epoch=100
         # adjust_lr(optimizer, epoch)
 
 
+max_story_len = 50 # see 4.2
 embd_size = 64
 UNK = '<UNK>'
-lr = 0.01
 
 
 def run():
@@ -84,7 +84,7 @@ def run():
         w2i = dict((w, i) for i, w in enumerate(vocab, 1))
         w2i[UNK] = 0
         vocab_size = len(vocab) + 1
-        story_len = max(len(s) for s, q, a in data)
+        story_len = min(max_story_len, max(len(s) for s, q, a in data))
         s_sent_len = max(len(ss) for s, q, a in data for ss in s)
         q_sent_len = max(len(q) for s, q, a in data)
         print('train num', len(train_data))
@@ -98,9 +98,7 @@ def run():
         model = MemNN(vocab_size, embd_size, vocab_size, story_len)
         if torch.cuda.is_available():
             model.cuda()
-        # optimizer = torch.optim.SGD(model.parameters(), lr=lr)
-        optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
-        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+        optimizer = torch.optim.Adam(model.parameters())
         loss_fn = nn.NLLLoss()
         vec_train = vectorize(train_data, w2i, story_len, s_sent_len, q_sent_len)
         vec_test = vectorize(test_data, w2i, story_len, s_sent_len, q_sent_len)
@@ -108,5 +106,6 @@ def run():
 
         print('Final Acc')
         test(model, vec_test, 32)
+
 
 run()
