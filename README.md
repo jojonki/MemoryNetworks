@@ -8,33 +8,33 @@
   http://arxiv.org/abs/1503.08895
 
 ## Requirements
-- PyTorch 0.2.0_3
+- PyTorch 0.3-
 - Download the 20 QA bAbI tasks http://www.thespermwhale.com/jaseweston/babi/tasks_1-20_v1-2.tar.gz
 
 ## Results
 
 Some tasks' performance is not good compared to original results :(
 
-- Task 1: 99.29%
-- Task 2: 29.74%
-- Task 3: 19.46%
-- Task 4: 72.08%
-- Task 5: 81.05%
-- Task 6: 85.69%
-- Task 7: 74.29%
-- Task 8: 87.20%
-- Task 9: 74.70%
-- Task 10: 62.50%
-- Task 11: 72.38%
-- Task 12: 15.52%
-- Task 13: 90.83%
-- Task 14: 29.54%   ????
-- Task 15: 99.70%
-- Task 16: 47.58%
-- Task 17: 47.58%
-- Task 18: 51.92%
-- Task 19: 11.39%
-- Task 20: 93.55%
+- Task 1: 99.70%
+- Task 2: 31.35%
+- Task 3: 24.29%
+- Task 4: 71.47%
+- Task 5: 83.97%
+- Task 6: 54.13%
+- Task 7: 86.79%
+- Task 8: 86.49%
+- Task 9: 79.94%
+- Task 10: 65.02%
+- Task 11: 86.29%
+- Task 12: 97.58%
+- Task 13: 91.13%
+- Task 14: 71.77%
+- Task 15: 55.95%
+- Task 16: 47.48%
+- Task 17: 52.02%
+- Task 18: 53.73%
+- Task 19: 9.38%
+- Task 20: 98.89%
 
 
 ## TODO

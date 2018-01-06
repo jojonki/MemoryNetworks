@@ -20,8 +20,8 @@ class MemNN(nn.Module):
         self.B = self.A[0] # query encoder
 
         # Temporal Encoding: see 4.1
-        self.TA = nn.Parameter(torch.randn(1, story_len, 1).normal_(-init_rng, init_rng))
-        self.TC = nn.Parameter(torch.randn(1, story_len, 1).normal_(-init_rng, init_rng))
+        self.TA = nn.Parameter(torch.randn(1, story_len, embd_size).normal_(-init_rng, init_rng))
+        self.TC = nn.Parameter(torch.randn(1, story_len, embd_size).normal_(-init_rng, init_rng))
 
     def forward(self, x, q):
         # x (bs, story_len, s_sent_len)
@@ -55,12 +55,12 @@ class MemNN(nn.Module):
                 l_k = l_k.repeat(bs, story_len, 1, self.embd_size) # (bs, story_len, s_sent_len, embd_size)
                 m *= l_k                                           # (bs, story_len, s_sent_len, embd_size)
             m = torch.sum(m, 2) # (bs, story_len, embd_size)
-            m += self.TA.repeat(bs, 1, self.embd_size)
+            m += self.TA.repeat(bs, 1, 1)
 
             c = self.dropout(self.A[k+1](x))           # (bs*story_len, s_sent_len, embd_size)
             c = c.view(bs, story_len, s_sent_len, -1)  # (bs, story_len, s_sent_len, embd_size)
             c = torch.sum(c, 2)                        # (bs, story_len, embd_size)
-            c += self.TC.repeat(bs, 1, self.embd_size) # (bs, story_len, embd_size)
+            c += self.TC.repeat(bs, 1, 1) # (bs, story_len, embd_size)
 
             p = torch.bmm(m, u.unsqueeze(2)).squeeze()      # (bs, story_len)
             p = F.softmax(p, -1)                            # (bs, story_len)
