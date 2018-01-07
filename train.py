@@ -21,7 +21,9 @@ def test(model, data, batch_size):
         pred_idx = pred.max(1)[1]
         correct += torch.sum(pred_idx == a).data[0]
         count += batch_size
-    print('Test Acc: {:.2f}% - '.format(correct/count*100), correct, '/', count)
+    acc = correct/count*100
+    print('Test Acc: {:.2f}% - '.format(acc), correct, '/', count)
+    return acc
 
 
 def adjust_lr(optimizer, epoch):
@@ -31,7 +33,7 @@ def adjust_lr(optimizer, epoch):
             print('Learning rate is set to', pg['lr'])
 
 
-def train(model, data, test_data, optimizer, loss_fn, batch_size=64, n_epoch=100):
+def train(model, data, test_data, optimizer, loss_fn, batch_size=32, n_epoch=100):
     for epoch in range(n_epoch):
         model.train()
         # print('epoch', epoch)
@@ -69,12 +71,17 @@ def train(model, data, test_data, optimizer, loss_fn, batch_size=64, n_epoch=100
         # adjust_lr(optimizer, epoch)
 
 
+# Set the random seed manually for reproducibility.
+seed = 1111
+torch.manual_seed(seed)
+
 max_story_len = 50 # see 4.2
 embd_size = 64
 UNK = '<UNK>'
 
 
 def run():
+    test_acc_results = []
     for i in range(20):
         print('-*_*_*_*_*_*_*_*_ Task', i+1)
         train_data, test_data, vocab = load_data('./data/tasks_1-20_v1-2/en', 0, i+1)
@@ -105,7 +112,11 @@ def run():
         train(model, vec_train, vec_test, optimizer, loss_fn)
 
         print('Final Acc')
-        test(model, vec_test, 32)
+        acc = test(model, vec_test, 32)
+        test_acc_results.append(acc)
+
+    for i, acc in enumerate(test_acc_results):
+        print('Task {}: Acc {:.2f}%'.format(i+1, acc))
 
 
 run()

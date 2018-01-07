@@ -15,26 +15,26 @@
 
 Some tasks' performance is not good compared to original results :(
 
-- Task 1: 99.70%
-- Task 2: 31.35%
-- Task 3: 24.29%
-- Task 4: 71.47%
-- Task 5: 83.97%
-- Task 6: 54.13%
-- Task 7: 86.79%
-- Task 8: 86.49%
-- Task 9: 79.94%
-- Task 10: 65.02%
-- Task 11: 86.29%
-- Task 12: 97.58%
-- Task 13: 91.13%
-- Task 14: 71.77%
-- Task 15: 55.95%
-- Task 16: 47.48%
-- Task 17: 52.02%
-- Task 18: 53.73%
-- Task 19: 9.38%
-- Task 20: 98.89%
+- Task 1: Acc 100.00%
+- Task 2: Acc 25.30%
+- Task 3: Acc 23.08%
+- Task 4: Acc 75.60%
+- Task 5: Acc 83.06%
+- Task 6: Acc 72.38%
+- Task 7: Acc 77.12%
+- Task 8: Acc 85.99%
+- Task 9: Acc 75.20%
+- Task 10: Acc 81.55%
+- Task 11: Acc 87.30%
+- Task 12: Acc 99.90%
+- Task 13: Acc 91.13%
+- Task 14: Acc 84.88%
+- Task 15: Acc 56.55%
+- Task 16: Acc 44.46%
+- Task 17: Acc 54.54%
+- Task 18: Acc 56.25%
+- Task 19: Acc 10.69%
+- Task 20: Acc 98.79%
 
 
 ## TODO
