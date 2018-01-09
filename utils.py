@@ -119,7 +119,7 @@ def word_to_index(sent, w2i):
         if w in w2i:
             vec.append(w2i[w])
         else:
-            vec.append(w2i['<UNK>'])
+            vec.append(w2i['<PAD>'])
     return vec
 
 

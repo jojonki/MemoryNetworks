@@ -7,7 +7,7 @@ import math
 
 
 class MemNN(nn.Module):
-    def __init__(self, vocab_size, embd_size, ans_size, story_len, hops=3, dropout=0.2, te=True, pe=True):
+    def __init__(self, vocab_size, embd_size, ans_size, max_story_len, hops=3, dropout=0.2, te=True, pe=True):
         super(MemNN, self).__init__()
         self.hops = hops
         self.embd_size = embd_size
@@ -18,15 +18,13 @@ class MemNN(nn.Module):
         self.dropout = nn.Dropout(p=dropout)
         self.A = nn.ModuleList([nn.Embedding(vocab_size, embd_size) for _ in range(hops+1)])
         for i in range(len(self.A)):
-            self.A[i].weight.data.uniform_(-init_rng, init_rng)
+            self.A[i].weight.data.normal_(0, init_rng)
         self.B = self.A[0] # query encoder
 
         # Temporal Encoding: see 4.1
-        stdv = 1. / math.sqrt(story_len)
         if self.temporal_encoding:
-            self.TA = nn.Parameter(torch.Tensor(1, story_len, embd_size).uniform_(-stdv, stdv))
-            self.TC = nn.Parameter(torch.Tensor(1, story_len, embd_size).uniform_(-stdv, stdv))
-
+            self.TA = nn.Parameter(torch.Tensor(1, max_story_len, embd_size).normal_(0, 0.1))
+            self.TC = nn.Parameter(torch.Tensor(1, max_story_len, embd_size).normal_(0, 0.1))
 
     def forward(self, x, q):
         # x (bs, story_len, s_sent_len)
@@ -43,8 +41,11 @@ class MemNN(nn.Module):
             pe = to_var(torch.zeros(J, d)) # (s_sent_len, embd_size)
             for j in range(1, J+1):
                 for k in range(1, d+1):
-                    l_kj = (1 - j / J) - (k / d) * (1 - 2 * j / J)
-                    pe[j-1][k-1] = l_kj
+                    # l_kj = (1 - j / J) - (k / d) * (1 - 2 * j / J)
+                    # pe[j-1][k-1] = l_kj
+                    # https://github.com/domluna/memn2n/blob/master/memn2n/memn2n.py#L12
+                    pe[j-1, k-1] = (k - (d - 1) / 2) * (j - (J - 1) / 2)
+                    pe = 1 + 4 * pe / d / J
             pe = pe.unsqueeze(0).unsqueeze(0) # (1, 1, s_sent_len, embd_size)
             pe = pe.repeat(bs, story_len, 1, 1) # (bs, story_len, s_sent_len, embd_size)
 
@@ -60,12 +61,14 @@ class MemNN(nn.Module):
             if self.position_encoding:
                 m *= pe # (bs, story_len, s_sent_len, embd_size)
             m = torch.sum(m, 2) # (bs, story_len, embd_size)
-            m += self.TA.repeat(bs, 1, 1)
+            if self.temporal_encoding:
+                m += self.TA.repeat(bs, 1, 1)[:, :story_len, :]
 
             c = self.dropout(self.A[k+1](x))           # (bs*story_len, s_sent_len, embd_size)
             c = c.view(bs, story_len, s_sent_len, -1)  # (bs, story_len, s_sent_len, embd_size)
             c = torch.sum(c, 2)                        # (bs, story_len, embd_size)
-            c += self.TC.repeat(bs, 1, 1) # (bs, story_len, embd_size)
+            if self.temporal_encoding:
+                c += self.TC.repeat(bs, 1, 1)[:, :story_len, :] # (bs, story_len, embd_size)
 
             p = torch.bmm(m, u.unsqueeze(2)).squeeze()      # (bs, story_len)
             p = F.softmax(p, -1)                            # (bs, story_len)

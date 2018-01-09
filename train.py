@@ -5,7 +5,7 @@ from utils import load_data, to_var, vectorize
 from memnn import MemNN
 
 
-def test(model, data, batch_size):
+def test(model, data, w2i, batch_size, task_id):
     model.eval()
     correct = 0
     count = 0
@@ -14,6 +14,16 @@ def test(model, data, batch_size):
         story = [d[0] for d in batch_data]
         q = [d[1] for d in batch_data]
         a = [d[2][0] for d in batch_data]
+
+        story_len = min(max_story_len, max([len(s) for s in story]))
+        s_sent_len = max([len(sent) for s in story for sent in s])
+        q_sent_len = max([len(sent) for sent in q])
+
+        vec_data = vectorize(batch_data, w2i, story_len, s_sent_len, q_sent_len)
+        story = [d[0] for d in vec_data]
+        q = [d[1] for d in vec_data]
+        a = [d[2][0] for d in vec_data]
+
         story = to_var(torch.LongTensor(story))
         q = to_var(torch.LongTensor(q))
         a = to_var(torch.LongTensor(a))
@@ -22,7 +32,7 @@ def test(model, data, batch_size):
         correct += torch.sum(pred_idx == a).data[0]
         count += batch_size
     acc = correct/count*100
-    print('Test Acc: {:.2f}% - '.format(acc), correct, '/', count)
+    print('Task {} Test Acc: {:.2f}% - '.format(task_id, acc), correct, '/', count)
     return acc
 
 
@@ -33,26 +43,34 @@ def adjust_lr(optimizer, epoch):
             print('Learning rate is set to', pg['lr'])
 
 
-def train(model, data, test_data, optimizer, loss_fn, batch_size=32, n_epoch=100):
+def train(model, train_data, test_data, optimizer, loss_fn, w2i, task_id, batch_size=16, n_epoch=100):
     for epoch in range(n_epoch):
         model.train()
         # print('epoch', epoch)
         correct = 0
         count = 0
-        random.shuffle(data)
-        for i in range(0, len(data)-batch_size, batch_size):
-            batch_data = data[i:i+batch_size]
+        random.shuffle(train_data)
+        for i in range(0, len(train_data)-batch_size, batch_size):
+            batch_data = train_data[i:i+batch_size]
             story = [d[0] for d in batch_data]
+            story_len = min(max_story_len, max([len(s) for s in story]))
+            s_sent_len = max([len(sent) for s in story for sent in s])
             q = [d[1] for d in batch_data]
-            a = [d[2][0] for d in batch_data]
+            q_sent_len = max([len(sent) for sent in q])
+
+            vec_data = vectorize(batch_data, w2i, story_len, s_sent_len, q_sent_len)
+            story = [d[0] for d in vec_data]
+            q = [d[1] for d in vec_data]
+            a = [d[2][0] for d in vec_data]
+
             story = to_var(torch.LongTensor(story))
             q = to_var(torch.LongTensor(q))
             a = to_var(torch.LongTensor(a))
 
-            optimizer.zero_grad()
             pred = model(story, q)
 
             loss = loss_fn(pred, a)
+            optimizer.zero_grad()
             loss.backward()
             optimizer.step()
 
@@ -66,7 +84,7 @@ def train(model, data, test_data, optimizer, loss_fn, batch_size=32, n_epoch=100
         if epoch % 20 == 0:
             print('=======Epoch {}======='.format(epoch))
             print('Training Acc: {:.2f}% - '.format(correct/count*100), correct, '/', count)
-            test(model, test_data, batch_size)
+            test(model, test_data, w2i, batch_size, task_id)
 
         # adjust_lr(optimizer, epoch)
 
@@ -75,21 +93,22 @@ def train(model, data, test_data, optimizer, loss_fn, batch_size=32, n_epoch=100
 seed = 1111
 torch.manual_seed(seed)
 
-max_story_len = 50 # see 4.2
-embd_size = 64
-UNK = '<UNK>'
+max_story_len = 25 # see 4.2 original is 50
+embd_size = 30
+PAD = '<PAD>'
 
 
 def run():
     test_acc_results = []
-    for i in range(20):
-        print('-*_*_*_*_*_*_*_*_ Task', i+1)
-        train_data, test_data, vocab = load_data('./data/tasks_1-20_v1-2/en', 0, i+1)
+    # for task_id in [2, 3, 4, 6, 11, 14, 15, 18]:
+    for task_id in range(1, 20+1):
+        print('-*_*_*_*_*_*_*_*_ Task', task_id)
+        train_data, test_data, vocab = load_data('./data/tasks_1-20_v1-2/en', 0, task_id)
         data = train_data + test_data
         print('sample', train_data[0])
 
         w2i = dict((w, i) for i, w in enumerate(vocab, 1))
-        w2i[UNK] = 0
+        w2i[PAD] = 0
         vocab_size = len(vocab) + 1
         story_len = min(max_story_len, max(len(s) for s, q, a in data))
         s_sent_len = max(len(ss) for s, q, a in data for ss in s)
@@ -107,12 +126,13 @@ def run():
             model.cuda()
         optimizer = torch.optim.Adam(model.parameters())
         loss_fn = nn.NLLLoss()
-        vec_train = vectorize(train_data, w2i, story_len, s_sent_len, q_sent_len)
-        vec_test = vectorize(test_data, w2i, story_len, s_sent_len, q_sent_len)
-        train(model, vec_train, vec_test, optimizer, loss_fn)
+        # vec_train = vectorize(train_data, w2i, story_len, s_sent_len, q_sent_len)
+        # vec_test = vectorize(test_data, w2i, story_len, s_sent_len, q_sent_len)
+        # train(model, vec_train, vec_test, optimizer, loss_fn, task_id)
+        train(model, train_data, test_data, optimizer, loss_fn, w2i, task_id)
 
         print('Final Acc')
-        acc = test(model, vec_test, 32)
+        acc = test(model, test_data, w2i, 32, task_id)
         test_acc_results.append(acc)
 
     for i, acc in enumerate(test_acc_results):
