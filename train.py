@@ -93,6 +93,7 @@ def train(model, train_data, test_data, optimizer, loss_fn, w2i, task_id, batch_
 seed = 1111
 torch.manual_seed(seed)
 
+use_10k = True
 max_story_len = 25 # see 4.2 original is 50
 embd_size = 30
 PAD = '<PAD>'
@@ -103,7 +104,10 @@ def run():
     # for task_id in [2, 3, 4, 6, 11, 14, 15, 18]:
     for task_id in range(1, 20+1):
         print('-*_*_*_*_*_*_*_*_ Task', task_id)
-        train_data, test_data, vocab = load_data('./data/tasks_1-20_v1-2/en', 0, task_id)
+        if use_10k:
+            train_data, test_data, vocab = load_data('./data/tasks_1-20_v1-2/en-10k', 0, task_id)
+        else:
+            train_data, test_data, vocab = load_data('./data/tasks_1-20_v1-2/en', 0, task_id)
         data = train_data + test_data
         print('sample', train_data[0])
 
