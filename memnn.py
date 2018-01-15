@@ -41,11 +41,8 @@ class MemNN(nn.Module):
             pe = to_var(torch.zeros(J, d)) # (s_sent_len, embd_size)
             for j in range(1, J+1):
                 for k in range(1, d+1):
-                    # l_kj = (1 - j / J) - (k / d) * (1 - 2 * j / J)
-                    # pe[j-1][k-1] = l_kj
-                    # https://github.com/domluna/memn2n/blob/master/memn2n/memn2n.py#L12
-                    pe[j-1, k-1] = (k - (d - 1) / 2) * (j - (J - 1) / 2)
-                    pe = 1 + 4 * pe / d / J
+                    l_kj = (1 - j / J) - (k / d) * (1 - 2 * j / J)
+                    pe[j-1][k-1] = l_kj
             pe = pe.unsqueeze(0).unsqueeze(0) # (1, 1, s_sent_len, embd_size)
             pe = pe.repeat(bs, story_len, 1, 1) # (bs, story_len, s_sent_len, embd_size)
 
