@@ -1,8 +1,46 @@
 import random
+import os
+import argparse
+
 import torch
 import torch.nn as nn
 from utils import load_data, to_var, vectorize
 from memnn import MemNN
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--embd_size', type=int, default=30, help='default 30. word embedding size')
+parser.add_argument('--batch_size', type=int, default=32, help='default 32. input batch size')
+parser.add_argument('--start_epoch', type=int, default=0, help='resume epoch count, default=0')
+parser.add_argument('--n_epochs', type=int, default=100, help='default 100. the number of epochs')
+parser.add_argument('--max_story_len', type=int, default=25, help='default 25. max story length. see 4.2')
+parser.add_argument('--use_10k', type=int, default=1, help='default 1. use 10k or 1k dataset')
+parser.add_argument('--test', type=int, default=0, help='defalut 1. for test, or for training')
+parser.add_argument('--resume', type=int, default=1, help='defalut 1. read pretrained models')
+parser.add_argument('--seed', type=int, default=1111, help='random seed')
+args = parser.parse_args()
+
+# Set the random seed manually for reproducibility.
+torch.manual_seed(args.seed)
+PAD = '<PAD>'
+max_story_len = args.max_story_len
+embd_size     = args.embd_size
+batch_size    = args.batch_size
+n_epochs      = args.n_epochs
+use_10k       = args.use_10k
+
+
+def save_checkpoint(state, is_best, filename):
+    print('save model!', filename)
+    torch.save(state, filename)
+
+
+def custom_loss_fn(data, labels):
+    loss = torch.autograd.Variable(torch.zeros(1))
+    for d, label in zip(data, labels):
+        loss -= torch.log(d[label]).cpu()
+    loss /= data.size(0)
+    return loss
 
 
 def test(model, data, w2i, batch_size, task_id):
@@ -43,7 +81,7 @@ def adjust_lr(optimizer, epoch):
             print('Learning rate is set to', pg['lr'])
 
 
-def train(model, train_data, test_data, optimizer, loss_fn, w2i, task_id, batch_size=16, n_epoch=100):
+def train(model, train_data, test_data, optimizer, loss_fn, w2i, task_id, batch_size, n_epoch):
     for epoch in range(n_epoch):
         model.train()
         # print('epoch', epoch)
@@ -89,14 +127,8 @@ def train(model, train_data, test_data, optimizer, loss_fn, w2i, task_id, batch_
         # adjust_lr(optimizer, epoch)
 
 
-# Set the random seed manually for reproducibility.
-seed = 1111
-torch.manual_seed(seed)
-
-use_10k = True
-max_story_len = 25 # see 4.2 original is 50
-embd_size = 30
-PAD = '<PAD>'
+def generate_model_filename(task_id, data_size, n_epochs):
+    return '{}/Task_{}_{}-Epoch{}.model'.format('./checkpoints', data_size, task_id, n_epochs)
 
 
 def run():
@@ -130,13 +162,31 @@ def run():
             model.cuda()
         optimizer = torch.optim.Adam(model.parameters())
         loss_fn = nn.NLLLoss()
-        # vec_train = vectorize(train_data, w2i, story_len, s_sent_len, q_sent_len)
-        # vec_test = vectorize(test_data, w2i, story_len, s_sent_len, q_sent_len)
-        # train(model, vec_train, vec_test, optimizer, loss_fn, task_id)
-        train(model, train_data, test_data, optimizer, loss_fn, w2i, task_id)
+
+        ds = '10k' if use_10k else '1k'
+        model_filename = generate_model_filename(task_id, ds, n_epochs)
+
+        if os.path.isfile(model_filename) and args.resume:
+            print("=> loading checkpoint '{}'".format(model_filename))
+            checkpoint = torch.load(model_filename)
+            args.start_epoch = checkpoint['epoch']
+            # best_prec1 = checkpoint['best_prec1']
+            model.load_state_dict(checkpoint['state_dict'])
+            optimizer.load_state_dict(checkpoint['optimizer'])
+            print("=> loaded checkpoint '{}' (epoch {})".format(args.resume, checkpoint['epoch']))
+        else:
+            print("=> no checkpoint found at '{}'".format(model_filename))
+
+        train(model, train_data, test_data, optimizer, loss_fn, w2i, task_id, batch_size, n_epochs)
+
+        save_checkpoint({
+            'epoch': args.n_epochs,
+            'state_dict': model.state_dict(),
+            'optimizer' : optimizer.state_dict(),
+        }, True, filename=model_filename)
 
         print('Final Acc')
-        acc = test(model, test_data, w2i, 32, task_id)
+        acc = test(model, test_data, w2i, batch_size, task_id)
         test_acc_results.append(acc)
 
     for i, acc in enumerate(test_acc_results):
