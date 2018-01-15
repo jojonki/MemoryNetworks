@@ -13,7 +13,7 @@
 
 ## Results
 
-Some tasks' performance is not good compared to original results :(
+I tested my model with 10k dataset. `()` is original MemNNs's performance (3 hops, PE).
 
 - Task 1: Acc 100.00%  (99.9%)
 - Task 2: Acc 97.28%   (78.4%)
