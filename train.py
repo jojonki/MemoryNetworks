@@ -177,17 +177,21 @@ def run():
         else:
             print("=> no checkpoint found at '{}'".format(model_filename))
 
-        train(model, train_data, test_data, optimizer, loss_fn, w2i, task_id, batch_size, n_epochs)
+        if args.test != 1:
+            train(model, train_data, test_data, optimizer, loss_fn, w2i, task_id, batch_size, n_epochs)
 
-        save_checkpoint({
-            'epoch': args.n_epochs,
-            'state_dict': model.state_dict(),
-            'optimizer' : optimizer.state_dict(),
-        }, True, filename=model_filename)
+            save_checkpoint({
+                'epoch': args.n_epochs,
+                'state_dict': model.state_dict(),
+                'optimizer' : optimizer.state_dict(),
+            }, True, filename=model_filename)
 
-        print('Final Acc')
-        acc = test(model, test_data, w2i, batch_size, task_id)
-        test_acc_results.append(acc)
+            print('Final Acc')
+            acc = test(model, test_data, w2i, batch_size, task_id)
+            test_acc_results.append(acc)
+        else:
+            acc = test(model, test_data, w2i, batch_size, task_id)
+            test_acc_results.append(acc)
 
     for i, acc in enumerate(test_acc_results):
         print('Task {}: Acc {:.2f}%'.format(i+1, acc))
