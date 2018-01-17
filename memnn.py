@@ -67,11 +67,9 @@ class MemNN(nn.Module):
             if self.temporal_encoding:
                 c += self.TC.repeat(bs, 1, 1)[:, :story_len, :] # (bs, story_len, embd_size)
 
-            p = torch.bmm(m, u.unsqueeze(2)).squeeze()      # (bs, story_len)
-            p = F.softmax(p, -1)                            # (bs, story_len)
-            p = p.unsqueeze(2).repeat(1, 1, self.embd_size) # (bs, story_len, embd_size)
-            o = c * p # use m as c, (bs, story_len, embd_size)
-            o = torch.sum(o, 1)   # (bs, embd_size)
+            p = torch.bmm(m, u.unsqueeze(2)).squeeze() # (bs, story_len)
+            p = F.softmax(p, -1).unsqueeze(1)          # (bs, 1, story_len)
+            o = torch.bmm(p, c).squeeze(1)             # use m as c, (bs, embd_size)
             u = o + u # (bs, embd_size)
 
         W = torch.t(self.A[-1].weight) # (embd_size, vocab_size)
