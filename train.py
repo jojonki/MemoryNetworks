@@ -112,6 +112,12 @@ def train(model, train_data, test_data, optimizer, loss_fn, w2i, task_id, batch_
             loss.backward()
             optimizer.step()
 
+            # reset padding index weight
+            for name, param in model.named_parameters():
+                if param.grad is not None:
+                    if 'A.' in name:
+                        param.data[0] = 0
+
             pred_idx = pred.max(1)[1]
             correct += torch.sum(pred_idx == a).data[0]
             count += batch_size

@@ -19,6 +19,7 @@ class MemNN(nn.Module):
         self.A = nn.ModuleList([nn.Embedding(vocab_size, embd_size) for _ in range(hops+1)])
         for i in range(len(self.A)):
             self.A[i].weight.data.normal_(0, init_rng)
+            self.A[i].weight.data[0] = 0 # for padding index
         self.B = self.A[0] # query encoder
 
         # Temporal Encoding: see 4.1
